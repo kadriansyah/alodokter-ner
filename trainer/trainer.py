@@ -6,12 +6,13 @@ from anago.models import BiLSTMCRF
 from anago.preprocessing import IndexTransformer
 from anago.trainer import Trainer
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.python.lib.io import file_io
 
 def main(args):
     print('Loading dataset...')
     print(args.train_data)
-    x_train, y_train = load_data_and_labels(args.data_dir +'/'+ args.train_data)
-    x_valid, y_valid = load_data_and_labels(args.data_dir +'/'+ args.valid_data)
+    x_train, y_train = load_data_and_labels(os.path.join(args.data_dir, args.train_data))
+    x_valid, y_valid = load_data_and_labels(os.path.join(args.data_dir, args.valid_data))
 
     print('Transforming datasets...')
     p = IndexTransformer(use_char=args.no_char_feature)
@@ -32,7 +33,7 @@ def main(args):
     model.compile(loss=loss, optimizer=args.optimizer)
 
     print('Training the model...')
-    callback = [EarlyStopping(monitor='loss', patience=5), ModelCheckpoint(filepath=args.save_dir +'/'+ args.best_weights_file, monitor='f1', save_best_only=True)]
+    callback = [EarlyStopping(monitor='loss', patience=5), ModelCheckpoint(filepath=os.path.join(args.save_dir, args.best_weights_file), monitor='f1', save_best_only=True)]
     trainer = Trainer(model, preprocessor=p)
     trainer.train(x_train,
                   y_train,
@@ -44,13 +45,32 @@ def main(args):
                   verbose=1)
 
     print('Saving the model...')
-    model.save(args.save_dir +'/'+ args.weights_file, args.save_dir +'/'+ args.params_file)
-    p.save(args.save_dir +'/'+ args.preprocessor_file)
+    model.save(os.path.join(args.save_dir, args.weights_file), os.path.join(args.save_dir, args.params_file))
+    p.save(os.path.join(args.save_dir, args.preprocessor_file))
+
+    # work arround Keras issue using GCS, Copy model.h5 over to Google Cloud Storage
+    # best_weights_file
+    with file_io.FileIO(os.path.join(args.save_dir, args.best_weights_file), mode='r') as input_f:
+        with file_io.FileIO(os.path.join(args.job-dir, args.best_weights_file), mode='w+') as output_f:
+            output_f.write(input_f.read())
+    
+    # weights_file
+    with file_io.FileIO(os.path.join(args.save_dir, args.weights_file), mode='r') as input_f:
+        with file_io.FileIO(os.path.join(args.job-dir, args.weights_file), mode='w+') as output_f:
+            output_f.write(input_f.read())
+
+    # preprocessor_file
+    with file_io.FileIO(os.path.join(args.save_dir, args.preprocessor_file), mode='r') as input_f:
+        with file_io.FileIO(os.path.join(args.job-dir, args.preprocessor_file), mode='w+') as output_f:
+            output_f.write(input_f.read())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Training a model')
     parser.add_argument('--data_dir', default=os.path.join(os.path.dirname(__file__), 'data'), help='training data directory')
     parser.add_argument('--save_dir', default=os.path.join(os.path.dirname(__file__), 'models'), help='models directory')
+
+    # ml-engine requirement params
+    parser.add_argument('--job-dir', default='/tmp/aloner_output', help='job dir')
 
     parser.add_argument('--train_data', default='train.txt', help='training data')
     parser.add_argument('--valid_data', default='valid.txt', help='validation data')
@@ -76,9 +96,6 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', type=float, default=0.5, help='dropout rate')
     parser.add_argument('--no_char_feature', action='store_false', help='use char feature')
     parser.add_argument('--no_use_crf', action='store_false', help='use crf layer')
-
-    # ml-engine requirement params
-    parser.add_argument('--job-dir', default='/tmp/aloner_output', help='job dir')
 
     args = parser.parse_args()
     main(args)

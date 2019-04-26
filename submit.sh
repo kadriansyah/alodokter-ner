@@ -19,5 +19,4 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --runtime-version 1.8 \
     --python-version 3.5 \
     -- \
-    --save_dir $BUCKET"aloner_$now" \
     --max_epoch 30 \
