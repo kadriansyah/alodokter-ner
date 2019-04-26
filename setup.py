@@ -57,6 +57,7 @@ class CustomCommands(setuptools.Command):
 #####
 
 REQUIRED_PACKAGES = [
+    'pip>=19.1',
     'absl-py==0.2.2',
     'anago==1.0.8',
     'aniso8601==1.2.0',
@@ -116,8 +117,7 @@ REQUIRED_PACKAGES = [
     'termcolor==1.1.0',
     'urllib3==1.22',
     'uWSGI==2.0.17',
-    'Werkzeug==0.14.1',
-    'pip>=19.1'
+    'Werkzeug==0.14.1'
 ]
 
 setup(
