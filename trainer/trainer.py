@@ -10,8 +10,8 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 def main(args):
     print('Loading dataset...')
     print(args.train_data)
-    x_train, y_train = load_data_and_labels(args.train_data)
-    x_valid, y_valid = load_data_and_labels(args.valid_data)
+    x_train, y_train = load_data_and_labels(args.data_dir +'/'+ args.train_data)
+    x_valid, y_valid = load_data_and_labels(args.data_dir +'/'+ args.valid_data)
 
     print('Transforming datasets...')
     p = IndexTransformer(use_char=args.no_char_feature)
@@ -32,7 +32,7 @@ def main(args):
     model.compile(loss=loss, optimizer=args.optimizer)
 
     print('Training the model...')
-    callback = [EarlyStopping(monitor='loss', patience=5), ModelCheckpoint(filepath=args.best_weights_file, monitor='f1', save_best_only=True)]
+    callback = [EarlyStopping(monitor='loss', patience=5), ModelCheckpoint(filepath=args.save_dir +'/'+ args.best_weights_file, monitor='f1', save_best_only=True)]
     trainer = Trainer(model, preprocessor=p)
     trainer.train(x_train,
                   y_train,
@@ -44,20 +44,20 @@ def main(args):
                   verbose=1)
 
     print('Saving the model...')
-    model.save(args.weights_file, args.params_file)
-    p.save(args.preprocessor_file)
+    model.save(args.save_dir +'/'+ args.weights_file, args.save_dir +'/'+ args.params_file)
+    p.save(args.save_dir +'/'+ args.preprocessor_file)
 
 if __name__ == '__main__':
-    DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
-    SAVE_DIR = os.path.join(os.path.dirname(__file__), 'models')
-
     parser = argparse.ArgumentParser(description='Training a model')
-    parser.add_argument('--train_data', default=os.path.join(DATA_DIR, 'train.txt'), help='training data')
-    parser.add_argument('--valid_data', default=os.path.join(DATA_DIR, 'valid.txt'), help='validation data')
-    parser.add_argument('--weights_file', default=os.path.join(SAVE_DIR, 'weights.h5'), help='weights file')
-    parser.add_argument('--best_weights_file', default=os.path.join(SAVE_DIR, 'best_weights.h5'), help='best weights file')
-    parser.add_argument('--params_file', default=os.path.join(SAVE_DIR, 'params.json'), help='parameter file')
-    parser.add_argument('--preprocessor_file', default=os.path.join(SAVE_DIR, 'preprocessor.json'))
+    parser.add_argument('--data_dir', default=os.path.join(os.path.dirname(__file__), 'data'), help='training data directory')
+    parser.add_argument('--save_dir', default=os.path.join(os.path.dirname(__file__), 'models'), help='models directory')
+
+    parser.add_argument('--train_data', default='train.txt', help='training data')
+    parser.add_argument('--valid_data', default='valid.txt', help='validation data')
+    parser.add_argument('--weights_file', default='weights.h5', help='weights file')
+    parser.add_argument('--best_weights_file', default='best_weights.h5', help='best weights file')
+    parser.add_argument('--params_file', default='params.json', help='parameter file')
+    parser.add_argument('--preprocessor_file', default='preprocessor.json')
 
     # Training parameters
     parser.add_argument('--loss', default='categorical_crossentropy', help='loss')
@@ -76,6 +76,9 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', type=float, default=0.5, help='dropout rate')
     parser.add_argument('--no_char_feature', action='store_false', help='use char feature')
     parser.add_argument('--no_use_crf', action='store_false', help='use crf layer')
+
+    # ml-engine requirement params
+    parser.add_argument('--job-dir', default='/tmp/aloner_output', help='job dir')
 
     args = parser.parse_args()
     main(args)
