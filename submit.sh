@@ -19,4 +19,4 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --runtime-version 1.8 \
     --python-version 3.5 \
     -- \
-    --max_epoch 30 \
+    --max_epoch 15 \

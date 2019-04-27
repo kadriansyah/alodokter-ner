@@ -126,7 +126,7 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
     include_package_data=True,
-    package_data={'trainer': ['data/*.txt']},
+    package_data={'trainer': ['data/*.txt','models/*.txt']},
     description='Alodokter NER using Anago',
     cmdclass={
         # Command class instantiated and run during pip install scenarios.

@@ -10,7 +10,6 @@ from tensorflow.python.lib.io import file_io
 
 def main(args):
     print('Loading dataset...')
-    print(args.train_data)
     x_train, y_train = load_data_and_labels(os.path.join(args.data_dir, args.train_data))
     x_valid, y_valid = load_data_and_labels(os.path.join(args.data_dir, args.valid_data))
 
@@ -50,18 +49,18 @@ def main(args):
 
     # work arround Keras issue using GCS, Copy model.h5 over to Google Cloud Storage
     # best_weights_file
-    with file_io.FileIO(os.path.join(args.save_dir, args.best_weights_file), mode='r') as input_f:
-        with file_io.FileIO(os.path.join(args.job-dir, args.best_weights_file), mode='w+') as output_f:
+    with file_io.FileIO(os.path.join(args.save_dir, args.best_weights_file), mode='rb') as input_f:
+        with file_io.FileIO(os.path.join(args.job_dir, args.best_weights_file), mode='wb+') as output_f:
             output_f.write(input_f.read())
     
     # weights_file
-    with file_io.FileIO(os.path.join(args.save_dir, args.weights_file), mode='r') as input_f:
-        with file_io.FileIO(os.path.join(args.job-dir, args.weights_file), mode='w+') as output_f:
+    with file_io.FileIO(os.path.join(args.save_dir, args.weights_file), mode='rb') as input_f:
+        with file_io.FileIO(os.path.join(args.job_dir, args.weights_file), mode='wb+') as output_f:
             output_f.write(input_f.read())
 
     # preprocessor_file
-    with file_io.FileIO(os.path.join(args.save_dir, args.preprocessor_file), mode='r') as input_f:
-        with file_io.FileIO(os.path.join(args.job-dir, args.preprocessor_file), mode='w+') as output_f:
+    with file_io.FileIO(os.path.join(args.save_dir, args.preprocessor_file), mode='rb') as input_f:
+        with file_io.FileIO(os.path.join(args.job_dir, args.preprocessor_file), mode='wb+') as output_f:
             output_f.write(input_f.read())
 
 if __name__ == '__main__':
