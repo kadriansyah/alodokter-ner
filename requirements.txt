@@ -53,7 +53,7 @@ six==1.11.0
 smart-open==1.5.7
 SQLAlchemy==1.2.8
 tensorboard==1.8.0
-tensorflow==1.8.0
+tensorflow==2.3.1
 termcolor==1.1.0
 urllib3==1.22
 uWSGI==2.0.17
